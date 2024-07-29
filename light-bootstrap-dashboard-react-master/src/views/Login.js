@@ -14,11 +14,11 @@ const Login = () => {
 
   return (
     <div className="login-container">
-      <div className="image-container">
-        <img src={require("assets/img/logo.png")} alt="Logo" className="login-image" />
-      </div>
+    
       <div className="login-form">
+        <img src={require("assets/img/logo.png")} alt="Logo" className="login-image" />
         <h2>Login</h2>
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="login">Login:</label>

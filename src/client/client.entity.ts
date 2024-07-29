@@ -1,5 +1,5 @@
 // src/client/client.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToMany } from 'typeorm';
 import { IsString, IsNotEmpty } from 'class-validator';
 import { Programme } from '../programme/programme.entity';
 
@@ -28,6 +28,6 @@ export class Client {
   @IsNotEmpty()
   statut: string;
 
-  @ManyToOne(() => Programme, programme => programme.clients)
-  programme: Programme;
+  @ManyToMany(() => Programme, programme => programme.clients)
+  programmes: Programme[];
 }

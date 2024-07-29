@@ -1,11 +1,9 @@
-
 import Dashboard from "views/Dashboard.js";
 import TableList from "views/TableList.js";
 import Typography from "views/Typography.js";
 import Icons from "views/Icons.js";
 import Maps from "views/Maps.js";
 import Details from "views/Details";
-
 
 const dashboardRoutes = [
   {

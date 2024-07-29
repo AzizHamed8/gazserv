@@ -71,8 +71,8 @@ function AddChauf() {
   return (
     <Container fluid>
       <Row>
-        <Col md="4"></Col>
-        <Col md="4" style={{ marginTop: "50px" }}>
+     
+                <Col md="4" style={{ marginTop: "50px" , marginLeft:"200px"}}>
           <Card className="card-plain table-plain-bg">
             <Card.Header>
               <Row>
@@ -213,6 +213,9 @@ function AddChauf() {
               </Form>
             </Card.Body>
           </Card>
+        </Col>
+        <Col md="4">
+          <img src={require("assets/img/5405627.png")} alt="Logo" style={{ height: "400px", width: "400px", marginLeft: "100px" ,marginTop:"200px"}} />
         </Col>
       </Row>
     </Container>

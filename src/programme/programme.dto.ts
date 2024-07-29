@@ -1,4 +1,5 @@
-import { IsInt, IsString, IsNotEmpty } from 'class-validator';
+// src/programme/programme.dto.ts
+import { IsInt, IsString, IsNotEmpty, IsOptional, IsArray } from 'class-validator';
 
 export class CreateProgrammeDto {
   @IsInt()
@@ -21,29 +22,35 @@ export class CreateProgrammeDto {
   @IsNotEmpty()
   camionId: number;
 
-  clientIds: number[]; // Liste des IDs de clients associés
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
+  clientIds?: number[]; // Liste des IDs de clients associés
 }
 
 export class UpdateProgrammeDto {
   @IsInt()
-  @IsNotEmpty()
+  @IsOptional()
   nbVide?: number;
 
   @IsInt()
-  @IsNotEmpty()
+  @IsOptional()
   nbPleine?: number;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   statut?: string;
 
   @IsInt()
-  @IsNotEmpty()
+  @IsOptional()
   chauffeurId?: number;
 
   @IsInt()
-  @IsNotEmpty()
+  @IsOptional()
   camionId?: number;
 
+  @IsArray()
+  @IsInt({ each: true })
+  @IsOptional()
   clientIds?: number[]; // Liste des IDs de clients associés
 }

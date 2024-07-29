@@ -17,8 +17,9 @@ export class ClientService {
   }
 
   async findAll(): Promise<Client[]> {
-    return await this.clientRepository.find({ relations: ['programme'] });
+    return await this.clientRepository.find({ relations: ['programmes'] }); // use 'programmes' if that's the property name in Client
   }
+  
 
   async findOne(id: number): Promise<Client> {
     return await this.clientRepository.findOneBy({ id });

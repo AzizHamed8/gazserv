@@ -1,5 +1,5 @@
 // src/programme/programme.entity.ts
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
 import { IsInt, IsString, IsNotEmpty } from 'class-validator';
 import { Chauffeur } from '../chauffeur/chauffeur.entity';
 import { Camion } from '../camion/camion.entity';
@@ -31,6 +31,7 @@ export class Programme {
   @ManyToOne(() => Camion, camion => camion.programmes, { nullable: false })
   camion: Camion;
 
-  @OneToMany(() => Client, client => client.programme)
+  @ManyToMany(() => Client, client => client.programmes)
+  @JoinTable()
   clients: Client[];
 }

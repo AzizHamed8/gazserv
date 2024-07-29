@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 import {
   Button,
   Card,
@@ -7,22 +9,30 @@ import {
   Col,
   Table,
 } from "react-bootstrap";
-import { Link } from "react-router-dom";
+import MapView from "components/MapView";
 
-// Mocked data fetching function
 const fetchClients = async () => {
-  // Replace with your actual data fetching logic
-  return [
-    { id: 1, nom: 'Dakota', adresse: 'rue makawla congo', modePayment: 'tpe', statut: 'non payé' },
-    { id: 2, nom: 'John Doe', adresse: '123 Main St', modePayment: 'cheque', statut: 'payé' },
-  ];
+  try {
+    const response = await axios.get('http://localhost:5000/clients');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching clients', error);
+    return [];
+  }
+};
+
+const deleteClient = async (id) => {
+  try {
+    await axios.delete(`http://localhost:5000/clients/${id}`);
+  } catch (error) {
+    console.error('Error deleting client', error);
+  }
 };
 
 function Clients() {
   const [clients, setClients] = useState([]);
 
   useEffect(() => {
-    // Fetch data when component mounts
     const fetchData = async () => {
       const data = await fetchClients();
       setClients(data);
@@ -31,14 +41,9 @@ function Clients() {
     fetchData();
   }, []);
 
-  const handleDelete = (id) => {
-    // Handle delete action here
-    console.log("Deleting client with ID:", id);
-  };
-
-  const handleEdit = (id) => {
-    // Handle edit action here
-    console.log("Editing client with ID:", id);
+  const handleDelete = async (id) => {
+    await deleteClient(id);
+    setClients(clients.filter(client => client.id !== id));
   };
 
   return (
@@ -51,12 +56,10 @@ function Clients() {
                 <Row>
                   <Col lg="8">
                     <Card.Title as="h4" style={{ color: "#6ACAB3", fontWeight: "bold" }}>Clients</Card.Title>
-                    <p className="card-category">
-                      Liste des clients
-                    </p>
+                    <p className="card-category">Liste des clients</p>
                   </Col>
                   <Col lg="4">
-                    <Button className="btn" style={{ background: "#039388", color: "white" }}>
+                    <Button className="btn" style={{ background: "#039388", color: "white", borderColor: "white" }}>
                       <Link to="/addClient" style={{ textDecoration: 'none', color: 'inherit' }}>Ajouter</Link>
                     </Button>
                   </Col>
@@ -79,15 +82,25 @@ function Clients() {
                       <tr key={client.id}>
                         <td>{client.id}</td>
                         <td>{client.nom}</td>
-                        <td>{client.adresse}</td>
-                        <td>{client.modePayment}</td>
+                        <td>
+                          {/* Show map with client address */}
+                          <MapView address={client.adresse} />
+                        </td>
+                        <td>{client.modePay}</td>
                         <td>{client.statut}</td>
                         <td>
-                          <Button className="btn" style={{ background: "white", color: "#282828" }} onClick={() => handleDelete(client.id)}>
+                          <Button
+                            className="btn"
+                            style={{ background: "white", color: "#282828", borderColor: "white" }}
+                            onClick={() => handleDelete(client.id)}
+                          >
                             Supprimer
                           </Button>
-                          <Button className="btn" style={{ background: "#282828", color: "white" }} onClick={() => handleEdit(client.id)}>
-                            Modifier
+                          <Button
+                            className="btn"
+                            style={{ background: "#282828", color: "white", borderColor: "black", marginLeft: "10px" }}
+                          >
+                            <Link to={`/addClient/${client.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>Modifier</Link>
                           </Button>
                         </td>
                       </tr>

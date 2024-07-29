@@ -6,6 +6,8 @@ import { ClientModule } from './client/client.module';
 import { CamionModule } from './camion/camion.module';
 import { ChauffeurModule } from './chauffeur/chauffeur.module';
 import { ProgrammeModule } from './programme/programme.module';
+import { AuthModule } from './auth/auth.module'; // Importation du module d'authentification
+import { UserModule } from './user/app.module';
 
 @Module({
   imports: [
@@ -15,21 +17,23 @@ import { ProgrammeModule } from './programme/programme.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        type: 'mysql', 
+        type: 'mysql',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
         autoLoadEntities: true,
-        synchronize: true, 
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
     ClientModule,
     CamionModule,
     ChauffeurModule,
-    ProgrammeModule, 
+    ProgrammeModule,
+    AuthModule, // Ajout du module d'authentification
+    UserModule,
   ],
 })
 export class AppModule {}

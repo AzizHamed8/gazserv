@@ -1,30 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { Link } from 'react-router-dom';
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import { Link, useHistory, useParams } from 'react-router-dom';
+import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
+import axios from 'axios';
 
-// Mocked data fetching functions
+// API functions
 const fetchChauffeurs = async () => {
-  // Replace with your actual data fetching logic
-  return [
-    { id: 1, name: 'Chauffeur 1' },
-    { id: 2, name: 'Chauffeur 2' },
-  ];
+  try {
+    const response = await axios.get('http://localhost:5000/chauffeurs');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching chauffeurs:', error);
+    throw error;
+  }
 };
 
 const fetchCamions = async () => {
-  // Replace with your actual data fetching logic
-  return [
-    { id: 1, name: 'Camion 1' },
-    { id: 2, name: 'Camion 2' },
-  ];
+  try {
+    const response = await axios.get('http://localhost:5000/camions');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching camions:', error);
+    throw error;
+  }
 };
 
 const fetchClients = async () => {
-  // Replace with your actual data fetching logic
-  return [
-    { id: 1, name: 'Client 1' },
-    { id: 2, name: 'Client 2' },
-  ];
+  try {
+    const response = await axios.get('http://localhost:5000/clients');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+    throw error;
+  }
+};
+
+const createProgramme = async (programme) => {
+  try {
+    await axios.post('http://localhost:5000/programmes', programme);
+  } catch (error) {
+    console.error('Error creating programme:', error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+const updateProgramme = async (id, programme) => {
+  try {
+    await axios.put(`http://localhost:5000/programmes/${id}`, programme);
+  } catch (error) {
+    console.error('Error updating programme:', error.response ? error.response.data : error.message);
+    throw error;
+  }
 };
 
 function AddProg() {
@@ -34,113 +59,183 @@ function AddProg() {
   const [camions, setCamions] = useState([]);
   const [clients, setClients] = useState([]);
   const [selectedClients, setSelectedClients] = useState([]);
+  const [statut, setStatut] = useState('terminé'); // Default value
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const history = useHistory();
+  const { id } = useParams();
 
   useEffect(() => {
-    // Fetch data when component mounts
     const fetchData = async () => {
-      const [chauffeurData, camionData, clientData] = await Promise.all([
-        fetchChauffeurs(),
-        fetchCamions(),
-        fetchClients(),
-      ]);
-      setChauffeurs(chauffeurData);
-      setCamions(camionData);
-      setClients(clientData);
+      try {
+        const [chauffeurData, camionData, clientData] = await Promise.all([
+          fetchChauffeurs(),
+          fetchCamions(),
+          fetchClients(),
+        ]);
+
+        // Filter active entities
+        const activeChauffeurs = chauffeurData.filter(chauffeur => chauffeur.statut === 'active');
+        const activeCamions = camionData.filter(camion => camion.statut === 'actif');
+
+        setChauffeurs(activeChauffeurs);
+        setCamions(activeCamions);
+        setClients(clientData);
+
+        if (id) {
+          // Fetch existing programme details for editing
+          const programmeResponse = await axios.get(`http://localhost:5000/programmes/${id}`);
+          const programmeData = programmeResponse.data;
+          setBouteillesPleine(programmeData.nbPleine);
+          setBouteillesVide(programmeData.nbVide);
+          setSelectedClients(programmeData.clientIds || []); // Handle empty clientIds array
+          setStatut(programmeData.statut);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
-  }, []);
+  }, [id]);
 
   const handleClientChange = (event) => {
-    const client = event.target.value;
-    const isChecked = event.target.checked;
+    const clientId = parseInt(event.target.value, 10);
+    setSelectedClients(prevSelectedClients =>
+      prevSelectedClients.includes(clientId)
+        ? prevSelectedClients.filter(id => id !== clientId)
+        : [...prevSelectedClients, clientId]
+    );
+  };
 
-    if (isChecked) {
-      setSelectedClients([...selectedClients, client]);
-    } else {
-      setSelectedClients(selectedClients.filter((c) => c !== client));
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      const programmeData = {
+        nbPleine: parseInt(bouteillesPleine, 10),
+        nbVide: parseInt(bouteillesVide, 10),
+        chauffeurId: parseInt(event.target.chauffeur.value, 10),
+        camionId: parseInt(event.target.camion.value, 10),
+        statut: statut,
+        clientIds: selectedClients,
+      };
+
+      console.log("Sending programme data:", programmeData);
+
+      if (id) {
+        await updateProgramme(id, programmeData);
+        console.log("Programme updated successfully!");
+      } else {
+        await createProgramme(programmeData);
+        console.log("Programme added successfully!");
+      }
+
+      history.push('/admin/programme');
+    } catch (error) {
+      console.error('Error submitting programme:', error);
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        const errorMessages = Array.isArray(errorData.message) ? errorData.message : [errorData.message];
+        setError(`Failed to submit programme: ${errorMessages.join(', ')}`);
+      } else {
+        setError('Failed to submit programme');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Handle form submission logic here
-    console.log("Form submitted!");
-  };
+  if (loading) return <p>Loading...</p>;
 
   return (
     <Container fluid>
       <Row>
-        <Col md="4"></Col>
-        <Col md="4" style={{ marginTop: "50px" }}>
+        <Col md="4" style={{ marginTop: "50px", marginLeft:"200px" }}>
           <Card className="card-plain table-plain-bg">
             <Card.Header>
               <Row>
                 <Col lg={8}>
-                  <Card.Title as="h4" style={{ color: "#6ACAB3", fontWeight: "bold", marginTop:"7px" }}>
-                    Ajouter un Programme
+                  <Card.Title as="h4" style={{ color: "#6ACAB3", fontWeight: "bold", marginTop: "7px" }}>
+                    {id ? "Modifier un Programme" : "Ajouter un Programme"}
                   </Card.Title>
                 </Col>
                 <Col>
-                  <Button className="btn" style={{ background: "#039388", color: "white", borderColor:"white" }}>
+                  <Button className="btn" style={{ background: "#039388", color: "white", borderColor: "white" }}>
                     <Link to="/admin/programme" style={{ textDecoration: 'none', color: 'inherit' }}>Retour</Link>
                   </Button>
                 </Col>
               </Row>
             </Card.Header>
             <Card.Body>
+              {error && <Alert variant="danger">{error}</Alert>}
               <Form onSubmit={handleSubmit} className="border p-3">
                 <Form.Group controlId="chauffeur">
-                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom:"10px" }}>Chauffeur</Form.Label>
-                  <Form.Control as="select" required>
+                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom: "10px" }}>Chauffeur</Form.Label>
+                  <Form.Control as="select" required defaultValue={id ? "loading" : ""}>
                     <option value="">Sélectionnez le chauffeur</option>
                     {chauffeurs.map(chauffeur => (
-                      <option key={chauffeur.id} value={chauffeur.id}>{chauffeur.name}</option>
+                      <option key={chauffeur.id} value={chauffeur.id}>{chauffeur.nom} {chauffeur.prenom}</option>
                     ))}
                   </Form.Control>
                 </Form.Group>
 
                 <Form.Group controlId="camion">
-                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom:"10px", marginTop:"10px" }}>Camion</Form.Label>
-                  <Form.Control as="select" required>
+                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom: "10px", marginTop: "10px" }}>Camion</Form.Label>
+                  <Form.Control as="select" required defaultValue={id ? "loading" : ""}>
                     <option value="">Sélectionnez le camion</option>
                     {camions.map(camion => (
-                      <option key={camion.id} value={camion.id}>{camion.name}</option>
+                      <option key={camion.id} value={camion.id}>{camion.type}</option>
                     ))}
                   </Form.Control>
                 </Form.Group>
 
                 <Form.Group controlId="bouteillesPleine">
-                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom:"10px", marginTop:"10px" }}>Nombre de bouteilles pleines</Form.Label>
+                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom: "10px", marginTop: "10px" }}>Nombre de bouteilles pleines</Form.Label>
                   <Form.Control type="number" placeholder="Entrez le nombre de bouteilles pleines" value={bouteillesPleine} onChange={(e) => setBouteillesPleine(e.target.value)} required />
                 </Form.Group>
 
                 <Form.Group controlId="bouteillesVide">
-                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom:"10px", marginTop:"10px" }}>Nombre de bouteilles vides</Form.Label>
+                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom: "10px", marginTop: "10px" }}>Nombre de bouteilles vides</Form.Label>
                   <Form.Control type="number" placeholder="Entrez le nombre de bouteilles vides" value={bouteillesVide} onChange={(e) => setBouteillesVide(e.target.value)} required />
                 </Form.Group>
 
+                <Form.Group controlId="statut">
+                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom: "10px", marginTop: "10px" }}>Statut</Form.Label>
+                  <Form.Control as="select" value={statut} onChange={(e) => setStatut(e.target.value)} required>
+                    <option value="terminé">Terminé</option>
+                    <option value="non terminé">Non terminé</option>
+                  </Form.Control>
+                </Form.Group>
+
                 <Form.Group controlId="clients">
-                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom:"10px", marginTop:"10px" }}>Liste des clients</Form.Label>
+                  <Form.Label style={{ color: "black", fontWeight: "bold", marginBottom: "10px", marginTop: "10px" }}>Clients</Form.Label>
                   {clients.map(client => (
-                    <div key={client.id}>
-                      <Form.Check 
-                        type="checkbox"
-                        id={`client-${client.id}`}
-                        label={client.name}
-                        value={client.id}
-                        onChange={handleClientChange}
-                      />
-                    </div>
+                    <Form.Check
+                      key={client.id}
+                      type="radio"
+                      label={`${client.nom} ${client.prenom}`}
+                      value={client.id}
+                      checked={selectedClients.includes(client.id)}
+                      onClick={handleClientChange}
+                    />
                   ))}
                 </Form.Group>
 
-                <Button className="btn" style={{ background: "#282828", color: "white", borderColor:"#282828", marginTop:"20px" , marginLeft:"170px"}} type="submit">
-                  Ajouter
+                <Button variant="primary" type="submit" style={{ background: "#6ACAB3", color: "white", borderColor: "white" }}>
+                  {id ? "Modifier" : "Ajouter"}
                 </Button>
               </Form>
             </Card.Body>
           </Card>
+          
+        </Col>
+        <Col md="4">
+          <img src={require("assets/img/3331617.jpg")} alt="Logo" style={{ height: "400px", width: "400px", marginLeft: "100px" ,marginTop:"200px"}} />
         </Col>
       </Row>
     </Container>

@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  Container,
-  Row,
-  Col,
-} from "react-bootstrap";
+import { Button, Card, Container, Row, Col } from "react-bootstrap";
+import axios from 'axios';
 
-// Mocked data fetching function
+// Fetch data from API
 const fetchProgrammeDetails = async (id) => {
-  // Replace this with your actual data fetching logic
-  return {
-    id: id,
-    nbPleine: 150,
-    nbVide: 50,
-    statut: 'En cours',
-    adresses: ['Station 1', 'Station 2']
-  };
+  try {
+    const response = await axios.get(`http://localhost:5000/programmes/${id}`); // Replace with your backend API URL
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching programme details", error);
+    return null;
+  }
 };
 
 function DetailsP() {
@@ -53,7 +47,7 @@ function DetailsP() {
                     </Card.Title>
                   </Col>
                   <Col>
-                    <Button className="btn" style={{ background: "#039388", color: "white" }}>
+                    <Button className="btn" style={{ background: "#039388", color: "white" , borderColor: "white" }}>
                       <Link to="/admin/programme" style={{ textDecoration: 'none', color: 'inherit' }}>Retour</Link>
                     </Button>
                   </Col>
@@ -66,17 +60,22 @@ function DetailsP() {
                   <li className="list-group-item">Nombre de bouteilles vides: {programme.nbVide}</li>
                   <li className="list-group-item">Statut: {programme.statut}</li>
                   <li className="list-group-item">
-                    Adresses:
+                    Clients:
                     <ul>
-                      {programme.adresses.map((adresse, index) => (
-                        <li key={index}>{adresse}</li>
-                      ))}
+                      {programme.clients && programme.clients.length > 0 ? (
+                        programme.clients.map((client, index) => (
+                          <li key={index}>{client.nom} {client.prenom} : {client.adresse}</li>
+                        ))
+                      ) : (
+                        <li>Aucun client disponible</li>
+                      )}
                     </ul>
                   </li>
                 </ul>
-                <Button className="btn" style={{ background: "#282828", color: "white" }}>
-                  Modifier
-                </Button>
+                <Button className="btn" style={{ background: "#282828", color: "white", borderColor: "black" , marginTop:"10px" }}>
+  <Link to={`/addProg/${programme.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>Modifier</Link>
+</Button>
+
               </Card.Body>
             </Card>
           </Col>
