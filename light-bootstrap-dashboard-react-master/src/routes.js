@@ -4,6 +4,7 @@ import Typography from "views/Typography.js";
 import Icons from "views/Icons.js";
 import Maps from "views/Maps.js";
 import Details from "views/Details";
+import LogoutButton from "views/Notifications";
 
 const dashboardRoutes = [
   {
@@ -41,18 +42,19 @@ const dashboardRoutes = [
     component: Icons,
     layout: "/admin"
   },
+
+  {
+    path: "/chauffeurs/details/:id",
+    component: Details,
+    layout: "/admin",
+  },
   {
     upgrade: true,
     path: "/logout",
     name: "Deconnection",
     icon: "nc-icon nc-button-power",
-    component: Icons,
+    component: LogoutButton,
     layout: "/admin"
-  },
-  {
-    path: "/chauffeurs/details/:id",
-    component: Details,
-    layout: "/admin",
   },
 ];
 

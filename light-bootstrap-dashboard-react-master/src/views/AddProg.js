@@ -218,7 +218,7 @@ function AddProg() {
                     <Form.Check
                       key={client.id}
                       type="radio"
-                      label={`${client.nom} ${client.prenom}`}
+                      label={`${client.nom}`}
                       value={client.id}
                       checked={selectedClients.includes(client.id)}
                       onClick={handleClientChange}

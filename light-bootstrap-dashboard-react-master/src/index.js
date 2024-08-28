@@ -15,11 +15,8 @@ import AddChauf from './views/AddChauf';
 import AddCamion from './views/AddCamion';
 import AddClient from './views/AddClient';
 import AddProg from './views/AddProg';
-import Login from './views/Login'; // Import your Login component
-import PrivateRoute from './components/PrivateRoute'; // Import the PrivateRoute component
-import { AuthProvider } from './auth/auth-context'; // Import AuthProvider
-import LogoutButton from './views/Icons';
-
+import { AuthProvider } from 'auth/auth-context';
+import Login from 'views/Login';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
@@ -27,16 +24,15 @@ root.render(
   <Router>
     <AuthProvider>
       <Switch>
-        <Route path="/login" component={Login} /> {/* Public route */}
-        <PrivateRoute path="/admin/dashboard" component={AdminLayout} />
-        <PrivateRoute path="/details/:id" component={Details} />
-        <PrivateRoute path="/detailsP/:id?" component={DetailsP} />
-        <PrivateRoute path="/addChauf/:id?" component={AddChauf} />
-        <PrivateRoute path="/addCamion/:id?" component={AddCamion} />
-        <PrivateRoute path="/addClient/:id?" component={AddClient} />
-        <PrivateRoute path="/addProg/:id?" component={AddProg} />
-        <PrivateRoute path="/logout" component={LogoutButton} /> {/* Ajoutez cette ligne pour la route de déconnexion */}
-        <Redirect from="/" to="/admin/dashboard" />
+        <Route path="/login" component={Login} />
+        <Route path="/admin" render={(props) => <AdminLayout {...props} />} />
+        <Route path="/details/:id" component={Details} />
+        <Route path="/detailsP/:id" component={DetailsP} />
+        <Route path="/addChauf/:id?" component={AddChauf} />
+        <Route path="/addCamion/:id?" component={AddCamion} />
+        <Route path="/addClient/:id?" component={AddClient} />
+        <Route path="/addProg/:id?" component={AddProg} />
+        <Redirect from="/" to="/login" /> {/* Updated to redirect to the login page */}
       </Switch>
     </AuthProvider>
   </Router>
